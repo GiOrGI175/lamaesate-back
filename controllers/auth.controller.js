@@ -57,13 +57,15 @@ export const login = async (req, res) => {
       }
     );
 
+    const { password: userPassword, ...userInfo } = user;
+
     res
       .cookie('token', token, {
         httpOnly: true,
         // secure: true,
         maxAge: age,
       })
-      .json({ message: 'Login Successful' });
+      .json(userInfo);
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: 'failed to login' });
