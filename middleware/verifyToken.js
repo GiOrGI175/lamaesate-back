@@ -12,5 +12,5 @@ export const verifyToken = (req, res, next) => {
     next();
   });
 
-  res.status(200).json({ message: 'you are Authenticed' });
+  // res.status(200).json({ message: 'you are Authenticed' });
 };
