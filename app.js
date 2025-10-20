@@ -13,7 +13,7 @@ app.use(cookieParser());
 
 app.use('/api/posts', postRoute);
 app.use('/api/auth', authRouter);
-app.use('/api/testRoute', testRouter);
+app.use('/api/test', testRouter);
 
 app.listen(8800, () => {
   console.log('server is running!');

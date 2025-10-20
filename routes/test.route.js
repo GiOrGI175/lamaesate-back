@@ -7,6 +7,7 @@ import {
 const router = express.Router();
 
 router.get('/should-be-logged-in', shuldbeLoggedIn);
-router.get('/should-be-logged-in', shuldbeAdmin);
+
+router.get('/should-be-admin', shuldbeAdmin);
 
 export default router;
