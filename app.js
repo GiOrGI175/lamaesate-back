@@ -70,8 +70,9 @@ app.use('/api/test', testRouter);
 app.use('/api/chats', chatRoute);
 app.use('/api/messages', messageRoute);
 
-server.listen(8800, () => {
-  console.log('Server + Socket.IO running on port 8800');
-});
+const PORT = process.env.PORT || 8800;
 
+server.listen(PORT, () => {
+  console.log(`Server + Socket.IO running on port ${PORT}`);
+});
 export { io };
