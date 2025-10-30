@@ -61,7 +61,7 @@ io.on('connection', (socket) => {
 
 app.use(
   cors({
-    origin: ['https://lamaesate-front.vercel.app/', 'http://localhost:5173'],
+    origin: ['https://lamaesate-front.vercel.app/'],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
   })
