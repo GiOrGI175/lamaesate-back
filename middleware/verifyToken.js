@@ -1,16 +1,18 @@
 import jwt from 'jsonwebtoken';
 
 export const verifyToken = (req, res, next) => {
-  const token = req.cookies.token;
+  const authHeader = req.headers.authorization;
 
-  if (!token) return res.status(401).json({ message: 'not Authenticed' });
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ message: 'Not authenticated' });
+  }
 
-  jwt.verify(token, process.env.JWT_SECRET_KEY, async (err, payload) => {
-    if (err) return res.status(401).json({ message: 'Token is not Valid!' });
+  const token = authHeader.split(' ')[1];
+
+  jwt.verify(token, process.env.JWT_SECRET_KEY, (err, payload) => {
+    if (err) return res.status(403).json({ message: 'Token is not valid!' });
+
     req.userId = payload.id;
-
     next();
   });
-
-  // res.status(200).json({ message: 'you are Authenticed' });
 };
