@@ -146,6 +146,7 @@ export const resetPosts = async (req, res) => {
 
 export const getPosts = async (req, res) => {
   const query = req.query;
+  const token = req.cookies?.token;
 
   try {
     const posts = await prisma.post.findMany({
@@ -153,17 +154,42 @@ export const getPosts = async (req, res) => {
         city: query.city || undefined,
         type: query.type || undefined,
         property: query.property || undefined,
-        bedroom: parseInt(query.bedroom) || undefined,
+        bedroom: query.bedroom ? parseInt(query.bedroom) : undefined,
         price: {
-          gte: parseInt(query.minPrice) || undefined,
-          lte: parseInt(query.maxPrice) || undefined,
+          gte: query.minPrice ? parseInt(query.minPrice) : undefined,
+          lte: query.maxPrice ? parseInt(query.maxPrice) : undefined,
         },
+      },
+      include: {
+        user: { select: { username: true, avatar: true } },
       },
     });
 
-    // setTimeout(() => {
-    res.status(200).json(posts);
-    // }, 3000);
+    if (!token) {
+      return res.status(200).json(posts.map((p) => ({ ...p, isSaved: false })));
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET_KEY, async (err, payload) => {
+      if (err) {
+        return res
+          .status(200)
+          .json(posts.map((p) => ({ ...p, isSaved: false })));
+      }
+
+      const savedPosts = await prisma.savedPost.findMany({
+        where: { userId: payload.id },
+        select: { postId: true },
+      });
+
+      const savedSet = new Set(savedPosts.map((s) => s.postId));
+
+      const result = posts.map((post) => ({
+        ...post,
+        isSaved: savedSet.has(post.id),
+      }));
+
+      res.status(200).json(result);
+    });
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: 'Failed to get posts' });
