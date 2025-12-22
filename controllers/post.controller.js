@@ -146,7 +146,7 @@ export const resetPosts = async (req, res) => {
 
 export const getPosts = async (req, res) => {
   const query = req.query;
-  const token = req.cookies?.token;
+  const userId = req.userId;
 
   try {
     const posts = await prisma.post.findMany({
@@ -165,31 +165,23 @@ export const getPosts = async (req, res) => {
       },
     });
 
-    if (!token) {
+    if (!userId) {
       return res.status(200).json(posts.map((p) => ({ ...p, isSaved: false })));
     }
 
-    jwt.verify(token, process.env.JWT_SECRET_KEY, async (err, payload) => {
-      if (err) {
-        return res
-          .status(200)
-          .json(posts.map((p) => ({ ...p, isSaved: false })));
-      }
-
-      const savedPosts = await prisma.savedPost.findMany({
-        where: { userId: payload.id },
-        select: { postId: true },
-      });
-
-      const savedSet = new Set(savedPosts.map((s) => s.postId));
-
-      const result = posts.map((post) => ({
-        ...post,
-        isSaved: savedSet.has(post.id),
-      }));
-
-      res.status(200).json(result);
+    const savedPosts = await prisma.savedPost.findMany({
+      where: { userId },
+      select: { postId: true },
     });
+
+    const savedSet = new Set(savedPosts.map((s) => s.postId));
+
+    const result = posts.map((post) => ({
+      ...post,
+      isSaved: savedSet.has(post.id),
+    }));
+
+    res.status(200).json(result);
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: 'Failed to get posts' });

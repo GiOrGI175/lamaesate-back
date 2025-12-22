@@ -36,44 +36,25 @@ export const login = async (req, res) => {
       where: { username },
     });
 
-    if (!user) return res.status(400).json({ message: 'Invalid Credential' });
+    if (!user) return res.status(400).json({ message: 'Invalid credential' });
 
-    const isPasswordVaild = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid)
+      return res.status(401).json({ message: 'Invalid credential' });
 
-    if (!isPasswordVaild)
-      return res.status(401).json({ message: 'Invalid Credential' });
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET_KEY, {
+      expiresIn: '7d',
+    });
 
-    // res.setHeader('set-cookie', 'test=' + 'myvalue').json('succes');
+    const { password: _, ...userInfo } = user;
 
-    const age = 1000 * 60 * 60 * 24 * 7;
-
-    const token = jwt.sign(
-      {
-        id: user.id,
-        isAdmin: false, //droebit
-      },
-      process.env.JWT_SECRET_KEY,
-      {
-        expiresIn: age,
-      }
-    );
-
-    const { password: userPassword, ...userInfo } = user;
-
-    res
-      .cookie('token', token, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'none',
-        maxAge: age,
-      })
-      .json({ token, user: userInfo });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: 'failed to login' });
+    return res.json({ token, user: userInfo });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ message: 'failed to login' });
   }
 };
 
 export const logout = (req, res) => {
-  res.clearCookie('token').status(200).json({ message: 'logout Successful' });
+  res.status(200).json({ message: 'logout successful' });
 };
