@@ -113,7 +113,7 @@ export const savePost = async (req, res) => {
 };
 
 export const profilePosts = async (req, res) => {
-  const tokenUserId = req.params.userId;
+  const tokenUserId = req.userId;
 
   try {
     const userPosts = await prisma.post.findMany({
@@ -132,7 +132,7 @@ export const profilePosts = async (req, res) => {
     res.status(200).json({ userPosts, savedPosts });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: 'Failed to get user!' });
+    res.status(500).json({ message: 'Failed to get profile posts!' });
   }
 };
 
